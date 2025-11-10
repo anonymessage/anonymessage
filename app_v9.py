@@ -380,41 +380,47 @@ def do_login_ui():
 
     st.subheader("Log in")
 
-    email = st.text_input("Email (not public)", "")
-    pwd = st.text_input("Password", "", type="password")
+    email = st.text_input("Email (not public)")
+    pwd = st.text_input("Password", type="password")
     remember = st.checkbox("Remember me for 7 days", value=True)
 
     if st.button("Log in"):
-        email = email.strip().lower()
 
-        # ✅ ADMIN LOGIN
-        if email == ADMIN_EMAIL.lower() and pwd == ADMIN_PASSWORD:
+        # ✅ Admin check
+        if email.strip().lower() == ADMIN_EMAIL.lower() and pwd == ADMIN_PASSWORD:
             st.session_state["auth"] = {
-                "username": "Admin",
+                "username": "Adminious_1",
                 "is_admin": True,
                 "is_premium": True,
             }
+
             if remember:
-                st.session_state["remember_me"] = True
-            add_note("✅ Logged in as Admin", "success")
+                tok = make_token("Adminious_1", True, True)
+                set_qtoken(tok)
+
+            add_note("Logged in as Admin.", "success")
             st.rerun()
             return
 
-        # ✅ REGULAR USER FALLBACK
+        # ✅ Anonymous / normal user
+        if not email.strip():
+            st.error("Incorrect email or password")
+            return
+
+        # Create user for normal login
         stored_user = get_user(email)
-        if stored_user is not None:
-            st.session_state["auth"] = {
-                "username": email,
-                "is_admin": False,
-                "is_premium": stored_user.get("premium", False),
-            }
-            if remember:
-                st.session_state["remember_me"] = True
-            add_note("✅ Logged in", "success")
-            st.rerun()
-            return
+        st.session_state["auth"] = {
+            "username": email,
+            "is_admin": False,
+            "is_premium": stored_user.get("premium", False),
+        }
 
-        st.error("Incorrect email or password")
+        if remember:
+            tok = make_token(email, False, stored_user.get("premium", False))
+            set_qtoken(tok)
+
+        add_note("Logged in.", "success")
+        st.rerun()
 
 # ---------------------------------------------------------
 # HEADER
