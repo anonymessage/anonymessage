@@ -384,32 +384,43 @@ def do_login_ui():
         unsafe_allow_html=True,
     )
 
-    # ✅ LOGIN FIELDS
     st.subheader("Log in")
+
     email = st.text_input("Email (not public)")
     pwd = st.text_input("Password", type="password")
     remember = st.checkbox("Remember me for 7 days", value=True)
 
     if st.button("Log in"):
         email = email.strip().lower()
-        pw = pwd
 
-        stored_user, ok = login_user(email, pw)
+        # ✅ ADMIN
+        if email == ADMIN_EMAIL.lower() and pwd == ADMIN_PASSWORD:
+            u = "Admin_1"
+            st.session_state[SK("auth")] = {
+                "username": u,
+                "is_admin": True,
+                "is_premium": True,
+            }
+            if remember:
+                st.session_state["remember_me"] = True
+            add_note("Logged in as Admin ✅", "success")
+            st.rerun()
 
-        if not ok:
-            st.error("Incorrect email or password")
-            st.stop()
+        # ✅ NORMAL USERS
+        existing = set(st.session_state[SK("users")].keys())
+        u = anon_handle(existing)
+        get_user(u)
 
-        st.session_state["auth"] = {
-            "username": stored_user["username"],
-            "is_admin": stored_user.get("is_admin", False),
-            "is_premium": stored_user.get("is_premium", False),
+        st.session_state[SK("auth")] = {
+            "username": u,
+            "is_admin": False,
+            "is_premium": False,
         }
 
         if remember:
             st.session_state["remember_me"] = True
 
-        add_note("Logged in.", "success")
+        add_note("Logged in ✅", "success")
         st.rerun()
 
 # ---------------------------------------------------------
