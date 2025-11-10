@@ -347,21 +347,15 @@ def require_auth() -> bool:
 # LOGOUT
 # ---------------------------------------------------------
 def logout():
-    # Remove authentication
     if SK("auth") in st.session_state:
         del st.session_state[SK("auth")]
 
-    # Remove remember flag
     if "remember_me" in st.session_state:
         del st.session_state["remember_me"]
 
-    # Clear token from URL
     set_qtoken(None)
-
     add_note("Logged out.", "success")
     st.rerun()
-
-
 
 def do_login_ui():
     st.title(APP_TITLE)
@@ -374,6 +368,7 @@ def do_login_ui():
         """,
         unsafe_allow_html=True,
     )
+
     st.markdown(
         """
         <div style='background:#222;padding:8px;border-radius:8px;margin-top:6px;'>
@@ -392,22 +387,20 @@ def do_login_ui():
     if st.button("Log in"):
         email = email.strip().lower()
 
-        # ✅ ADMIN CHECK
+        # ✅ ADMIN LOGIN
         if email == ADMIN_EMAIL.lower() and pwd == ADMIN_PASSWORD:
             st.session_state["auth"] = {
                 "username": "Admin",
                 "is_admin": True,
                 "is_premium": True,
             }
-
             if remember:
                 st.session_state["remember_me"] = True
-
-            add_note("Logged in as Admin ✅", "success")
+            add_note("✅ Logged in as Admin", "success")
             st.rerun()
             return
 
-        # ✅ NORMAL USER — fallback
+        # ✅ REGULAR USER FALLBACK
         stored_user = get_user(email)
         if stored_user is not None:
             st.session_state["auth"] = {
@@ -417,8 +410,7 @@ def do_login_ui():
             }
             if remember:
                 st.session_state["remember_me"] = True
-
-            add_note("Logged in ✅", "success")
+            add_note("✅ Logged in", "success")
             st.rerun()
             return
 
