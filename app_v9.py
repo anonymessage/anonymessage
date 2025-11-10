@@ -391,36 +391,34 @@ def do_login_ui():
     remember = st.checkbox("Remember me for 7 days", value=True)
 
     if st.button("Log in"):
-        email = email.strip().lower()
+    email = email.strip().lower()
 
-        # ✅ ADMIN
-        if email == ADMIN_EMAIL.lower() and pwd == ADMIN_PASSWORD:
-            u = "Admin_1"
-            st.session_state[SK("auth")] = {
-                "username": u,
-                "is_admin": True,
-                "is_premium": True,
-            }
-            if remember:
-                st.session_state["remember_me"] = True
-            add_note("Logged in as Admin ✅", "success")
-            st.rerun()
+    # ✅ 1) CHECK ADMIN STRICTLY
+    if email == ADMIN_EMAIL.lower() and pwd == ADMIN_PASSWORD:
+        u = "Admin_1"
+        st.session_state[SK("auth")] = {
+            "username": u,
+            "is_admin": True,
+            "is_premium": True,
+        }
+        if remember:
+            st.session_state["remember_me"] = True
+        add_note("✅ Logged in as Admin", "success")
+        st.rerun()
 
-        # ✅ NORMAL USERS
+    # ✅ 2) ANY OTHER LOGIN = normal anon user
+    else:
         existing = set(st.session_state[SK("users")].keys())
         u = anon_handle(existing)
         get_user(u)
-
         st.session_state[SK("auth")] = {
             "username": u,
             "is_admin": False,
             "is_premium": False,
         }
-
         if remember:
             st.session_state["remember_me"] = True
-
-        add_note("Logged in ✅", "success")
+        add_note("✅ Logged in", "success")
         st.rerun()
 
 # ---------------------------------------------------------
