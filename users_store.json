@@ -1,0 +1,14 @@
+{
+  "tonyrowlandson2014@gmail.com": {
+    "id": "admin01",
+    "password_hash": "21bac807e66c8b045abc21cb45b760c6e2fbe5b03cf2c3238a73b0818937079b",
+    "anon_name": "Admin",
+    "created": "2025-10-30T15:58:14.298149",
+    "last_login": "2025-10-30T15:58:14.298149",
+    "email_verified": true,
+    "mobile": null,
+    "mobile_verified": false,
+    "banned": false,
+    "shadow_ban": false
+  }
+}
