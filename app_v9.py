@@ -343,6 +343,25 @@ def require_auth() -> bool:
     }
     return True
 
+# ---------------------------------------------------------
+# LOGOUT
+# ---------------------------------------------------------
+def logout():
+    # Remove authentication
+    if SK("auth") in st.session_state:
+        del st.session_state[SK("auth")]
+
+    # Remove remember flag
+    if "remember_me" in st.session_state:
+        del st.session_state["remember_me"]
+
+    # Clear token from URL
+    set_qtoken(None)
+
+    add_note("Logged out.", "success")
+    st.rerun()
+
+
 
 def do_login_ui():
     st.title(APP_TITLE)
