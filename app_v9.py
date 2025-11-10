@@ -8,6 +8,10 @@ import time, random, hashlib, hmac, json, os, re
 from datetime import datetime, timedelta, timezone, date
 from typing import Dict, List, Optional
 
+# Password hashing
+def hash_pw(p: str) -> str:
+    return hashlib.sha256(p.encode()).hexdigest()
+
 # ---------------------------------------------------------
 # OCR + PDF PARSING UTILITIES
 # ---------------------------------------------------------
@@ -241,18 +245,27 @@ def anon_handle(existing: set) -> str:
     return f"Anonymous_{random.randint(1000,9999)}"
 
 
-def get_user(u: str) -> Dict:
-    return st.session_state[SK("users")].setdefault(
-        u,
-        {
-            "premium": False,
-            "rep": 0,
-            "xp": 0,
-            "badges": [],
-            "posts": 0,
-            "last_ai_reply_ts": 0,
-        },
-    )
+def get_user(email: str):
+    users = st.session_state[SK("users")]
+    return users.get(email)
+
+def create_user(email: str, password: str):
+    users = st.session_state[SK("users")]
+
+    if email in users:
+        return False  # already exists
+
+    users[email] = {
+        "password_hash": hash_pw(password),
+        "premium": False,
+        "rep": 0,
+        "xp": 0,
+        "badges": [],
+        "posts": 0,
+        "last_ai_reply_ts": 0,
+    }
+    return True
+
 
 def set_premium(u: str, v: bool = True):
     get_user(u)["premium"] = v
@@ -380,14 +393,14 @@ def do_login_ui():
 
     st.subheader("Log in")
 
-    email = st.text_input("Email (not public)")
+    email = st.text_input("Email (not public)").strip().lower()
     pwd = st.text_input("Password", type="password")
     remember = st.checkbox("Remember me for 7 days", value=True)
 
     if st.button("Log in"):
 
         # ✅ Admin check
-        if email.strip().lower() == ADMIN_EMAIL.lower() and pwd == ADMIN_PASSWORD:
+        if email == ADMIN_EMAIL.lower() and pwd == ADMIN_PASSWORD:
             st.session_state["auth"] = {
                 "username": "Adminious_1",
                 "is_admin": True,
@@ -402,13 +415,21 @@ def do_login_ui():
             st.rerun()
             return
 
-        # ✅ Anonymous / normal user
-        if not email.strip():
+        # ✅ Normal users must exist
+        users = st.session_state[SK("users")]
+
+        if email not in users:
             st.error("Incorrect email or password")
             return
 
-        # Create user for normal login
-        stored_user = get_user(email)
+        stored_user = users[email]
+
+        # ✅ Check password hash
+        if stored_user.get("password_hash") != hash_pw(pwd):
+            st.error("Incorrect email or password")
+            return
+
+        # ✅ Login success
         st.session_state["auth"] = {
             "username": email,
             "is_admin": False,
