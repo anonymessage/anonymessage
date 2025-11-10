@@ -340,15 +340,33 @@ def init_store():
 def require_auth() -> bool:
     if SK("auth") in st.session_state:
         return True
+
     tok = st.query_params.get("t")
     if not tok:
         return False
+
     data = parse_token(tok)
     if not data:
         return False
+
     u, adm, pre = data["u"], bool(data["adm"]), bool(data["pre"])
-    get_user(u)
+
+    # ✅ Ensure user exists
+    users = st.session_state[SK("users")]
+    if u not in users:
+        users[u] = {
+            "password_hash": "",
+            "premium": pre,
+            "rep": 0,
+            "xp": 0,
+            "badges": [],
+            "posts": 0,
+            "last_ai_reply_ts": 0,
+        }
+
+    # ✅ Now safe to set premium
     set_premium(u, pre)
+
     st.session_state[SK("auth")] = {
         "username": u,
         "is_admin": adm,
