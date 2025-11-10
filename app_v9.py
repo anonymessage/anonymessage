@@ -366,7 +366,6 @@ def logout():
 def do_login_ui():
     st.title(APP_TITLE)
 
-    # Top banners
     st.markdown(
         """
         <div style='background:#0b6e4f22;padding:8px 12px;border-radius:8px;'>
@@ -384,38 +383,46 @@ def do_login_ui():
         unsafe_allow_html=True,
     )
 
-    # ---- Login form ----
     st.subheader("Log in")
 
-    email = st.text_input("Email (not public)")
-    pwd = st.text_input("Password", type="password")
+    email = st.text_input("Email (not public)", "")
+    pwd = st.text_input("Password", "", type="password")
     remember = st.checkbox("Remember me for 7 days", value=True)
 
     if st.button("Log in"):
+        email = email.strip().lower()
 
-        # ✅ ONLY this admin account can log in
-        if email.strip().lower() == ADMIN_EMAIL.lower() and pwd == ADMIN_PASSWORD:
-            username = "Admin_1"
-            is_admin = True
-            is_premium = True
+        # ✅ ADMIN CHECK
+        if email == ADMIN_EMAIL.lower() and pwd == ADMIN_PASSWORD:
+            st.session_state["auth"] = {
+                "username": "Admin",
+                "is_admin": True,
+                "is_premium": True,
+            }
 
-        else:
-            st.error("Incorrect email or password")
-            st.stop()
+            if remember:
+                st.session_state["remember_me"] = True
 
-        # ✅ Save session
-        st.session_state["auth"] = {
-            "username": username,
-            "is_admin": is_admin,
-            "is_premium": is_premium,
-        }
+            add_note("Logged in as Admin ✅", "success")
+            st.rerun()
+            return
 
-        # ✅ Remember-me flag
-        if remember:
-            st.session_state["remember_me"] = True
+        # ✅ NORMAL USER — fallback
+        stored_user = get_user(email)
+        if stored_user is not None:
+            st.session_state["auth"] = {
+                "username": email,
+                "is_admin": False,
+                "is_premium": stored_user.get("premium", False),
+            }
+            if remember:
+                st.session_state["remember_me"] = True
 
-        add_note("Logged in.", "success")
-        st.rerun()
+            add_note("Logged in ✅", "success")
+            st.rerun()
+            return
+
+        st.error("Incorrect email or password")
 
 # ---------------------------------------------------------
 # HEADER
