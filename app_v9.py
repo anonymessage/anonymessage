@@ -355,6 +355,7 @@ def do_login_ui():
         """,
         unsafe_allow_html=True,
     )
+
     st.markdown(
         """
         <div style='background:#222;padding:8px;border-radius:8px;margin-top:6px;'>
@@ -364,41 +365,33 @@ def do_login_ui():
         unsafe_allow_html=True,
     )
 
+    # ✅ LOGIN FIELDS
     st.subheader("Log in")
     email = st.text_input("Email (not public)")
     pwd = st.text_input("Password", type="password")
     remember = st.checkbox("Remember me for 7 days", value=True)
 
     if st.button("Log in"):
-    email = email.strip().lower()
-    pw = pwd
+        email = email.strip().lower()
+        pw = pwd
 
-    stored_user, ok = login_user(email, pw)
+        stored_user, ok = login_user(email, pw)
 
-    if not ok:
-        st.error("Incorrect email or password")
-        st.stop()
+        if not ok:
+            st.error("Incorrect email or password")
+            st.stop()
 
-    st.session_state["auth"] = {
-        "username": stored_user["username"],
-        "is_admin": stored_user.get("is_admin", False),
-        "is_premium": stored_user.get("is_premium", False),
-    }
+        st.session_state["auth"] = {
+            "username": stored_user["username"],
+            "is_admin": stored_user.get("is_admin", False),
+            "is_premium": stored_user.get("is_premium", False),
+        }
 
-    if remember:
-        st.session_state["remember_me"] = True
+        if remember:
+            st.session_state["remember_me"] = True
 
-    add_note("Logged in.", "success")
-    st.rerun()
-
-
-
-def logout():
-    st.session_state.pop(SK("auth"), None)
-    set_qtoken(None)
-    add_note("Logged out.", "info")
-    st.rerun()
-
+        add_note("Logged in.", "success")
+        st.rerun()
 
 # ---------------------------------------------------------
 # HEADER
