@@ -370,32 +370,27 @@ def do_login_ui():
     remember = st.checkbox("Remember me for 7 days", value=True)
 
     if st.button("Log in"):
-        if email.strip().lower() == ADMIN_EMAIL.lower() and pwd == ADMIN_PASSWORD:
-            u = "Adminous_1"
-            get_user(u)
-            set_premium(u, True)
-            st.session_state[SK("auth")] = {
-                "username": u,
-                "is_admin": True,
-                "is_premium": True,
-            }
-            if remember:
-                set_qtoken(make_token(u, True, True))
-            add_note("Logged in as Admin.", "success")
-            st.rerun()
-        else:
-            u = anon_handle(set(st.session_state[SK("users")]))
-            get_user(u)
-            st.session_state[SK("auth")] = {
-                "username": u,
-                "is_admin": False,
-                "is_premium": False,
-            }
-            if remember:
-                days = st.session_state[SK("settings")]["remember_days"]
-                set_qtoken(make_token(u, False, False, days=days))
-            add_note(f"Welcome, {u}.", "success")
-            st.rerun()
+    email = email.strip().lower()
+    pw = pwd
+
+    stored_user, ok = login_user(email, pw)
+
+    if not ok:
+        st.error("Incorrect email or password")
+        st.stop()
+
+    st.session_state["auth"] = {
+        "username": stored_user["username"],
+        "is_admin": stored_user.get("is_admin", False),
+        "is_premium": stored_user.get("is_premium", False),
+    }
+
+    if remember:
+        st.session_state["remember_me"] = True
+
+    add_note("Logged in.", "success")
+    st.rerun()
+
 
 
 def logout():
