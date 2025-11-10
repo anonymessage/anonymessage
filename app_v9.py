@@ -366,6 +366,7 @@ def logout():
 def do_login_ui():
     st.title(APP_TITLE)
 
+    # Top banners
     st.markdown(
         """
         <div style='background:#0b6e4f22;padding:8px 12px;border-radius:8px;'>
@@ -374,7 +375,6 @@ def do_login_ui():
         """,
         unsafe_allow_html=True,
     )
-
     st.markdown(
         """
         <div style='background:#222;padding:8px;border-radius:8px;margin-top:6px;'>
@@ -384,14 +384,16 @@ def do_login_ui():
         unsafe_allow_html=True,
     )
 
-        st.subheader("Log in")
+    # ---- Login form ----
+    st.subheader("Log in")
+
     email = st.text_input("Email (not public)")
     pwd = st.text_input("Password", type="password")
     remember = st.checkbox("Remember me for 7 days", value=True)
 
     if st.button("Log in"):
 
-        # ✅ Force-match admin credentials
+        # ✅ ONLY this admin account can log in
         if email.strip().lower() == ADMIN_EMAIL.lower() and pwd == ADMIN_PASSWORD:
             username = "Admin_1"
             is_admin = True
@@ -408,6 +410,7 @@ def do_login_ui():
             "is_premium": is_premium,
         }
 
+        # ✅ Remember-me flag
         if remember:
             st.session_state["remember_me"] = True
 
